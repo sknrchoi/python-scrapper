@@ -1,67 +1,43 @@
 import requests
 from bs4 import BeautifulSoup
 
-LIMIT = 50
-URL = f"https://www.indeed.com/jobs?q=python&limit={LIMIT}"
+URL = f"https://stackoverflow.com/jobs?q=python&sort=i"
 
 
 def get_last_page():
     result = requests.get(URL)
-    soup = BeautifulSoup(result.text, 'html.parser')
-    pagination = soup.find("div", {"class": "pagination"})
-
-    #list
-    links = pagination.find_all('a')
-    pages = []
-    # except the last one
-    for link in links[:-1]:
-        pages.append(int(link.string))
-
-    # first item from the end
-    #print(pages[-1])
-
-    # get maximum number
-    max_page = pages[-1]
-    return max_page
+    soup = BeautifulSoup(result.text, "html.parser")
+    pages = soup.find("div", {"class": "s-pagination"}).find_all("a")
+    last_pages = pages[-2].get_text(strip=True)
+    return int(last_pages)
 
 
 def extract_job(html):
-    title = html.find("h2", {"class": "title"}).find("a")["title"]
-    company = html.find("span", {"class": "company"})
-    if company:
-      company_anchor = company.find("a")
-      if company_anchor is not None:
-          company = str(company_anchor.string)
-      else:
-          company = str(company.string)
-      company = company.strip()
-    else:
-      company = None
-    location = html.find("div", {"class": "recJobLoc"})["data-rc-loc"]
-    job_id = html["data-jk"]
+    title = html.find("h2", {"class": "mb4"}).find("a")["title"]
+    company, location = html.find("h3", {
+        "class": "mb4"
+    }).find_all(
+        "span", recursive=False)  # don't go deep using recursive option
     return {
         'title': title,
-        'company': company,
-        'location': location,
-        'link': f"https://www.indeed.com/viewjob?jk={job_id}"
+        'company': company.get_text(strip=True),
+        'location': location.get_text(strip=True)
     }
 
 
 def extract_jobs(last_page):
     jobs = []
     for page in range(last_page):
-        print(f"Scrapping page {page}")
-        result = requests.get(f"{URL}&start={page*LIMIT}")
+        result = requests.get(f"{URL}&PG={page+1}")
         soup = BeautifulSoup(result.text, "html.parser")
-        results = soup.find_all("div", {"class": "jobsearch-SerpJobCard"})
-
-    for result in results:
-        job = extract_job(result)
-        jobs.append(job)
+        results = soup.find_all("div", {"class": "-job"})
+        for result in results:
+            job = extract_job(result)
+            jobs.append(job)
     return jobs
 
 
 def get_jobs():
-    last_pages = get_last_page()
-    jobs = extract_jobs(last_pages)
+    last_page = get_last_page()
+    jobs = extract_jobs(last_page)  # list
     return jobs
