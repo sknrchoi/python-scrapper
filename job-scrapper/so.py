@@ -20,12 +20,19 @@ def extract_job(html):
         "span", recursive=False)  # don't go deep using recursive option
     company = company.get_text(strip=True)
     location = location.get_text(strip=True).strip(" \r")
-    return {'title': title, 'company': company, 'location': location}
+    job_id = html["data-jobid"]
+    return {
+        'title': title,
+        'company': company,
+        'location': location,
+        "apply_link": f"https://stackoverflow.com/jobs/{job_id}"
+    }
 
 
 def extract_jobs(last_page):
     jobs = []
     for page in range(last_page):
+        print(f"Scrapping SO Page: {page}")
         result = requests.get(f"{URL}&PG={page+1}")
         soup = BeautifulSoup(result.text, "html.parser")
         results = soup.find_all("div", {"class": "-job"})
