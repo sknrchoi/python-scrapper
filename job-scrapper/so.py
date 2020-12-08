@@ -18,11 +18,9 @@ def extract_job(html):
         "class": "mb4"
     }).find_all(
         "span", recursive=False)  # don't go deep using recursive option
-    return {
-        'title': title,
-        'company': company.get_text(strip=True),
-        'location': location.get_text(strip=True)
-    }
+    company = company.get_text(strip=True)
+    location = location.get_text(strip=True).strip(" \r")
+    return {'title': title, 'company': company, 'location': location}
 
 
 def extract_jobs(last_page):
