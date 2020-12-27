@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>
+		Reddit Reader
+	</title>
+	<link href="https://andybrewer.github.io/mvp/mvp.css" rel="stylesheet">
+	</link>
+</head>
+
+<body>
+	<header>
+		<h1><a href="/">Remote Jobs</a></h1>
+		<h3>{{resultsNumber}} {{searchingBy}} jobs found.</h3>
+		<h4>
+            <a href="/export?word={{searchingBy}}">Export to CSV</a>
+        </h4>
+		<h5><a href="{{request.referrer}}">← Go back</a></h5>
+	</header>
+	<main>
+		{% for job in jobs %}
+		<div>
+			<h3>{{job.title}}</h3>
+			<h4>{{job.company}}</h4>
+			<h4><a href="{{job.link}}" target="_blank">Apply</a></h4>
+			<hr />
+		</div>
+		{% endfor %}
+	</main>
+</body>
+
+</html>
